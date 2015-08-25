@@ -44,5 +44,9 @@
     <string name="title_activity_recipients">Choose Recipients</string>
     <string name="empty_recipients_list_message">Choose Some Friends First!</string>
     <string name="password_change_request_success">You have requested to change your password, please check your email inbox!</string>
+    <string name="error_selecting_title">There was an error with the file selected. Please select another file.</string>
+    <string name="error_selecting_message_title">Were Sorry!</string>
+    <string name="success_message">Message sent!</string>
+    <string name="error_sending_message">There was an error getting your message.</string>
 
 </resources>

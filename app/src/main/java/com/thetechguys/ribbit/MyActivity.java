@@ -68,7 +68,7 @@ public class MyActivity extends FragmentActivity implements ActionBar.TabListene
                         case 1: //Video
                             Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
                             mMediaUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
-                            mMediaUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
+
                             if (mMediaUri == null) {
                                 //display error
                                 Toast.makeText(MyActivity.this, R.string.error_external_storage, Toast.LENGTH_LONG).show();
@@ -239,6 +239,7 @@ public class MyActivity extends FragmentActivity implements ActionBar.TabListene
                 } else {
                     mMediaUri = data.getData();
                 }
+                Log.i(TAG, "Media URI: " + mMediaUri);
                 if (requestCode == PICK_VIDEO_REQUEST) {
                     //make sure file less than 10MB
                     int fileSize = 0;
@@ -269,21 +270,25 @@ public class MyActivity extends FragmentActivity implements ActionBar.TabListene
                 //add to gallery
                 Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                 mediaScanIntent.setData(mMediaUri);
+                sendBroadcast(mediaScanIntent);
+            }
+
+            Intent recipientIntent = new Intent(this, RecipientsActivity.class);
+            recipientIntent.setData(mMediaUri);
 
                 String fileType;
-                if (requestCode == PICK_VIDEO_REQUEST || requestCode == TAKE_VIDEO_REQUEST) {
-                    fileType = ParseConstants.TYPE_VIDEO;
-                } else {
+                if (requestCode == PICK_PHOTO_REQUEST || requestCode == TAKE_PHOTO_REQUEST) {
                     fileType = ParseConstants.TYPE_IMAGE;
+                } else {
+                    fileType = ParseConstants.TYPE_VIDEO;
                 }
-                sendBroadcast(mediaScanIntent);
 
 
-                Intent recipientIntent = new Intent(this, RecipientsActivity.class);
-                recipientIntent.setData(mMediaUri);
+
+
                 recipientIntent.putExtra(ParseConstants.KEY_FILE_TYPE, fileType);
                 startActivity(recipientIntent);
-            }
+
         }
         else if(resultCode != RESULT_CANCELED){
            Toast.makeText(this,R.string.general_error, Toast.LENGTH_LONG).show();
@@ -312,8 +317,8 @@ public class MyActivity extends FragmentActivity implements ActionBar.TabListene
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        switch(item.getItemId()){
+        int itemId = item.getItemId();
+        switch(itemId){
 
             case R.id.action_logout_item:
             ParseUser.logOut();
@@ -330,8 +335,8 @@ public class MyActivity extends FragmentActivity implements ActionBar.TabListene
                 dialog.show();
 
 
-        return super.onOptionsItemSelected(item);
-            default: return super.onOptionsItemSelected(item);
+        //return super.onOptionsItemSelected(item);
+            //default: return super.onOptionsItemSelected(item);
     }
 
         return super.onOptionsItemSelected(item);

@@ -60,17 +60,11 @@ public class EditFriendsActivity extends  ListActivity{
                 for (ParseUser user : mUsers) {
                     usernames[i] = user.getUsername();
                     i++;
-
-
                 }
                 ArrayAdapter<String> adapter = new ArrayAdapter<String>(EditFriendsActivity.this, android.R.layout.simple_list_item_checked, usernames );
                 setListAdapter(adapter);
-
                 addFriendCheckmarks();
-            }
-
-
-            else {
+            } else {
                 Log.e(TAG, e.getMessage());
                 AlertDialog.Builder builder = new AlertDialog.Builder(EditFriendsActivity.this);
                 builder.setMessage(e.getMessage())

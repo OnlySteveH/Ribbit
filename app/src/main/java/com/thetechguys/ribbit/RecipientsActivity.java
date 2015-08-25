@@ -11,13 +11,16 @@ import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,9 +92,6 @@ public class RecipientsActivity extends ListActivity {
         });
     }
 
-
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -110,7 +110,19 @@ public class RecipientsActivity extends ListActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_send) {
             ParseObject message = createMessage();
-            //send(message);
+            if (message == null) {
+                //there was an error
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(getString(R.string.error_selecting_title))
+                        .setTitle(getString(R.string.error_selecting_message_title))
+                        .setPositiveButton(android.R.string.ok, null);
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            } else {
+                send (message);//send(message);
+                finish();
+
+            }
             return true;
         }
 
@@ -132,11 +144,26 @@ public class RecipientsActivity extends ListActivity {
 
         ParseObject message = new ParseObject(ParseConstants.CLASS_MESSAGES);
         message.put(ParseConstants.KEY_SENDER_ID, ParseUser.getCurrentUser().getObjectId());
-        message.put(ParseConstants.KEY_USERNAME, ParseUser.getCurrentUser().getUsername());
-        message.put(ParseConstants.RECIPIENT_IDS, getRecipientIds());
+        message.put(ParseConstants.KEY_SENDER_NAME, ParseUser.getCurrentUser().getUsername());
+        message.put(ParseConstants.KEY_RECIPIENT_IDS, getRecipientIds());
         message.put(ParseConstants.KEY_FILE_TYPE,mFileType);
 
-        return message;
+        byte[] fileBytes = FileHelper.getByteArrayFromFile(this, mMediaUri);
+
+        if (fileBytes == null){
+            return null;
+        }
+        else { if (mFileType.equals(ParseConstants.TYPE_IMAGE)) {
+                fileBytes = FileHelper.reduceImageForUpload(fileBytes);
+            }
+            String fileName = FileHelper.getFileName(this,mMediaUri,mFileType);
+            ParseFile file = new ParseFile(fileName, fileBytes);
+            message.put(ParseConstants.KEY_FILE, file);
+
+            return message;
+        }
+
+
     }
 
     protected ArrayList<String> getRecipientIds() {
@@ -147,5 +174,29 @@ public class RecipientsActivity extends ListActivity {
             }
         }
         return recipientsIds;
+    }
+
+    protected void send(ParseObject message){
+        message.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if(e == null){
+                    //success
+                    Toast.makeText(RecipientsActivity.this,getString(R.string.success_message),Toast.LENGTH_LONG).show();
+                }
+
+                else{
+                    Log.d(TAG, "Weird error: " + e);
+                    //error
+                    //Toast.makeText(RecipientsActivity.this,"SumnWong",Toast.LENGTH_LONG).show();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(RecipientsActivity.this);
+                    builder.setMessage(getString(R.string.error_sending_message))
+                           .setTitle(getString(R.string.error_selecting_message_title))
+                            .setPositiveButton(android.R.string.ok, null);
+                   AlertDialog dialog = builder.create();
+                   dialog.show();
+                }
+            }
+        });
     }
 }
